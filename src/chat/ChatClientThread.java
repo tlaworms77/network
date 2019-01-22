@@ -2,44 +2,36 @@ package chat;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.Socket;
 import java.net.SocketException;
 
 public class ChatClientThread extends Thread {
-	BufferedReader br;
-
-	public ChatClientThread(BufferedReader br) {
-		this.br = br;
+private Socket socket;
+	
+	public ChatClientThread( Socket socket ) {
+		this.socket = socket;
 	}
-
+	
 	@Override
 	public void run() {
-		try {
-			while (true) {
-				String data = br.readLine();
-				if (data == null) {
-					System.out.println("채팅 서버 종료");
+		try{
+			BufferedReader br = new BufferedReader( new InputStreamReader(socket.getInputStream(), "UTF-8" ) );
+
+			while( true ) {
+				String message = br.readLine();
+				if( message == null ) {
 					break;
 				}
-				System.out.println(data);
+				System.out.println( message );
 			}
-
-		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			System.out.println("closed by server: " + e);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			System.out.println("IOException error: " + e);
-		} catch (Exception e) {
-			// TODO: handle exception
-			System.out.println("Exception error: " + e) ;
-		} finally {
-			try {
-				if (br != null)
-					br.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				System.out.println("error33:" + e);
-			}
+		} catch( SocketException ex ){
+			//ChatClient.consoleLog( "다음 이유로 프로그램을 종료 합니다 :" + ex );	
+			System.out.println("서버와 연결이 끊어졌습니다.");
+			System.exit( 0 );
+		} catch( IOException ex ){
+			ChatClient.consoleLog( "다음 이유로 프로그램을 종료 합니다 :" + ex );	
+			System.exit( 0 );
 		}
 	}
 }

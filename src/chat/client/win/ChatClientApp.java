@@ -31,7 +31,6 @@ public class ChatClientApp {
 		
 		cw.show();
 		
-		
 	}
 
 }

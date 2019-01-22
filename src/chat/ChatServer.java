@@ -1,7 +1,7 @@
 package chat;
 
 import java.io.IOException;
-import java.io.Writer;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -24,48 +24,49 @@ import java.util.List;
  */
 
 public class ChatServer {
-	private static final int PORT = 8000;
+	private static final int PORT = 9999;
 	
-	public static void main(String[] args) {
-		ServerSocket serverScoket = null;
-
+	public static void main( String[] args ) {
+		List<PrintWriter> listPrintWriter =
+				new ArrayList<PrintWriter>();
+		
+		ServerSocket serverSocket = null;
+		
 		try {
-			// 1. 서버 소켓 생성
-			serverScoket = new ServerSocket();
-
-			// 2. 바인딩 //192.168.0.73
+			//1. create server socket
+			serverSocket = new ServerSocket();
+			
+			//1-1. set option SO_REUSEADDR 
+			//     (종료후 빨리 바인딩을 하기 위해서 )
+			serverSocket.setReuseAddress( true );
+			
+			//2. binding
 			String localhost = InetAddress.getLocalHost().getHostAddress();
-			serverScoket.bind(new InetSocketAddress(localhost, PORT));
-			log("binding... " + localhost + ":" + PORT);
-
-			// writer pool
-			List<Writer> listWriters = new ArrayList<Writer>();
+			serverSocket.bind( new InetSocketAddress(localhost, PORT), 5 );
+			consoleLog( "binding " + localhost + ":" + PORT );
 			
-			// 3. 요청 대기
-			while(true) {
-				Socket socket = serverScoket.accept();
-				// 수락된 소켓을 생성자에서 초기화시킨 후 Thread 생성 및 run 
-				new ChatServerThread(socket, listWriters).start();
+			while( true ) {
+				//3. wating for connection
+				Socket socket = serverSocket.accept();
 				
+				Thread thread = new ChatServerThread( socket, listPrintWriter  );
+				thread.start();
 			}
-			
-			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			System.out.println("error:" + e);
+			consoleLog( "error:" + e );
 		} finally {
 			try {
-				if(serverScoket != null && serverScoket.isClosed() == false)
-					serverScoket.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				if( serverSocket != null && 
+					serverSocket.isClosed() == false ){
+					serverSocket.close();
+				}
+			}catch( IOException ex ) {
+				consoleLog( "error:" + ex );
 			}
 		}
-
 	}
-
-	static void log(String log) {
-		System.out.println(log);
+	
+	public static void consoleLog( String message ) {
+		System.out.println( "[chat server]" + message );
 	}
 }

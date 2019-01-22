@@ -19,6 +19,11 @@ public class TCPServer {
 			// 1. 서버소켓 생성
 			serverSocket = new ServerSocket();
 			
+			//1-1. set option SO_REUSSEADDR
+			//	(종료 후 빨리 바인딩을 하기 위해서)
+			// Time-wait 상태에서 서버 재실행이 가능하게 끔 한다.
+			serverSocket.setReuseAddress(true);
+			
 			//2. Binding: Socket에 SocketAddress(IPAddress + Port) 바인딩한다.
 			InetAddress inetAddress = InetAddress.getLocalHost();
 			String localhostAddress = inetAddress.getHostAddress();
@@ -61,6 +66,13 @@ public class TCPServer {
 					System.out.println("[server] received:" + data);
 					
 					//6. 데이터 쓰기
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
 					os.write(data.getBytes("UTF-8"));
 				}
 			} catch(SocketException e) {
